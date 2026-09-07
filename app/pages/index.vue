@@ -3,6 +3,8 @@ import { sub } from 'date-fns'
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Period, Range } from '~/types'
 
+const { user } = useAuth()
+
 const { isNotificationsSlideoverOpen } = useDashboard()
 
 const items = [[{
@@ -61,6 +63,9 @@ const period = ref<Period>('daily')
     </template>
 
     <template #body>
+      <div>
+        Welcome, {{ user?.name }}
+      </div>
       <HomeStats :period="period" :range="range" />
       <HomeChart :period="period" :range="range" />
       <HomeSales :period="period" :range="range" />
