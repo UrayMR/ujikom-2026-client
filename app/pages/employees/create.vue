@@ -10,6 +10,7 @@ const form = reactive<EmployeeSchema>({
   email: '',
   phoneNumber: '',
   address: '',
+  education: 'SMA/SMK',
   birthDate: new Date(),
   gender: 'male',
   salary: 0

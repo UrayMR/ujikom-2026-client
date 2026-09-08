@@ -72,6 +72,14 @@ export interface Employee {
   email: string
   phoneNumber: string
   address: string
+  education: 'Tidak/Belum Pernah'
+    | 'SD'
+    | 'SMP'
+    | 'SMA/SMK'
+    | 'D1/D2/D3'
+    | 'S1/D4'
+    | 'S2'
+    | 'S3'
   birthDate: Date
   gender: 'male' | 'female'
   salary: number

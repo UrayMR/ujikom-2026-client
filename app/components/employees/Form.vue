@@ -33,6 +33,17 @@ const genderOptions = [
   { label: 'Other', value: 'other' }
 ]
 
+const educationOptions = [
+  { label: 'Tidak/Belum Pernah', value: 'Tidak/Belum Pernah' },
+  { label: 'SD', value: 'SD' },
+  { label: 'SMP', value: 'SMP' },
+  { label: 'SMA/SMK', value: 'SMA/SMK' },
+  { label: 'D1/D2/D3', value: 'D1/D2/D3' },
+  { label: 'S1/D4', value: 'S1/D4' },
+  { label: 'S2', value: 'S2' },
+  { label: 'S3', value: 'S3' }
+]
+
 const submitLabel = computed(() => {
   switch (props.mode) {
     case 'create':
@@ -127,7 +138,7 @@ function toggleEditMode() {
               <UInput
                 :model-value="form.phoneNumber ?? ''"
                 :disabled="isReadOnly"
-                placeholder="+1 (555) 000-0000"
+                placeholder="+62 812 3456 7890"
                 class="w-full"
                 @update:model-value="(value: string) => updateField('phoneNumber', value)"
               />
@@ -153,7 +164,17 @@ function toggleEditMode() {
               />
             </UFormField>
 
-            <UFormField label="Salary" name="salary" class="md:col-span-2">
+            <UFormField label="Education" name="education">
+              <USelect
+                :model-value="form.education ?? 'SMA/SMK'"
+                :disabled="isReadOnly"
+                :items="educationOptions"
+                class="w-full"
+                @update:model-value="(value: any) => updateField('education', value)"
+              />
+            </UFormField>
+
+            <UFormField label="Salary" name="salary">
               <UInput
                 :model-value="form.salary?.toString() ?? '0'"
                 :disabled="isReadOnly"
@@ -235,6 +256,14 @@ function toggleEditMode() {
           </div>
           <div>
             <p class="text-xs uppercase text-muted">
+              Education
+            </p>
+            <p class="mt-1 text-base font-medium text-highlighted">
+              {{ form.education || '-' }}
+            </p>
+          </div>
+          <div>
+            <p class="text-xs uppercase text-muted">
               Gender
             </p>
             <p class="mt-1 text-base font-medium text-highlighted capitalize">
@@ -267,7 +296,7 @@ function toggleEditMode() {
           </div>
         </div>
 
-        <div class="mt-6 flex gap-2">
+        <div v-if="mode !== 'create'" class="mt-6 flex gap-2">
           <UButton
             label="Delete"
             color="error"

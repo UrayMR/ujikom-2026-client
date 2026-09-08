@@ -20,6 +20,17 @@ export const employeeSchema = z.object({
     .min(1, 'Address is required')
     .max(200, 'Address must be at most 200 characters long'),
 
+  education: z.enum(['Tidak/Belum Pernah',
+    'SD',
+    'SMP',
+    'SMA/SMK',
+    'D1/D2/D3',
+    'S1/D4',
+    'S2',
+    'S3'], {
+    message: 'Please select an education level'
+  }),
+
   birthDate: z.date({
     message: 'Please select a date'
   }),
