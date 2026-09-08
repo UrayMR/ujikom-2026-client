@@ -10,6 +10,7 @@ export const useFetchData = <T>(
   options: FetchDataOptions = {}
 ) => {
   const config = useRuntimeConfig()
+  const cookieHeader = useServerCookieHeader()
   const { show } = useAlert()
 
   return useFetch<T>(url, {
@@ -17,6 +18,11 @@ export const useFetchData = <T>(
 
     baseURL: config.public.apiBaseUrl,
     credentials: 'include',
+
+    headers: {
+      ...cookieHeader,
+      ...options.headers
+    },
 
     onResponseError({ response }) {
       const status = response.status
