@@ -3,13 +3,11 @@ import type { Employee } from '~/types'
 
 const props = withDefaults(defineProps<{
   form: Partial<Employee>
-  submitLabel?: string
   loading?: boolean
   title?: string
   subtitle?: string
   mode?: 'create' | 'edit' | 'show'
 }>(), {
-  submitLabel: 'Save Employee',
   loading: false,
   title: 'Employee',
   subtitle: '',
@@ -20,16 +18,45 @@ const emit = defineEmits<{
   'submit': []
   'cancel': []
   'delete': []
+  'reset': []
   'update:form': [value: Partial<Employee>]
+  'update:mode': [value: 'create' | 'edit' | 'show']
 }>()
 
 const isReadOnly = computed(() => props.mode === 'show')
+
+const submitLabel = computed(() => {
+  switch (props.mode) {
+    case 'create':
+      return 'Save Employee'
+    case 'edit':
+      return 'Update Employee'
+    default:
+      return 'Submit'
+  }
+})
+
+const onCancel = () => {
+  if (props.mode === 'edit') {
+    emit('reset')
+    emit('update:mode', 'show')
+    return
+  }
+
+  emit('cancel')
+}
 
 function updateField(field: keyof Employee, value: string) {
   emit('update:form', {
     ...props.form,
     [field]: value
   })
+}
+
+function toggleEditMode() {
+  if (props.mode === 'show') {
+    emit('update:mode', 'edit')
+  }
 }
 </script>
 
@@ -69,19 +96,30 @@ function updateField(field: keyof Employee, value: string) {
             </UFormField>
           </div>
 
-          <div v-if="mode !== 'show'" class="flex justify-end gap-2 pt-2">
-            <UButton
-              label="Cancel"
-              color="neutral"
-              variant="subtle"
-              @click="emit('cancel')"
-            />
-            <UButton
-              :label="submitLabel"
-              type="submit"
-              color="primary"
-              :loading="loading"
-            />
+          <div class="pt-2 flex justify-end">
+            <div v-if="mode !== 'show'" class="flex gap-2">
+              <UButton
+                label="Cancel"
+                color="neutral"
+                variant="subtle"
+                @click="onCancel"
+              />
+              <UButton
+                :label="submitLabel"
+                type="submit"
+                color="primary"
+                :loading="loading"
+              />
+            </div>
+
+            <div v-else>
+              <UButton
+                label="Edit"
+                color="primary"
+                variant="subtle"
+                @click="toggleEditMode"
+              />
+            </div>
           </div>
         </UForm>
       </div>
@@ -102,12 +140,13 @@ function updateField(field: keyof Employee, value: string) {
           </div>
         </div>
 
-        <div v-if="mode === 'show'" class="mt-6 flex gap-2">
+        <div class="mt-6 flex gap-2">
           <UButton
             label="Delete"
             color="error"
             variant="soft"
             icon="i-lucide-trash"
+            :disabled="mode !== 'show'"
             @click="emit('delete')"
           />
         </div>

@@ -1,26 +1,51 @@
 <script setup lang="ts">
+import type { ApiResponse, Employee } from '~/types'
+
 const route = useRoute()
 const toast = useToast()
 
 const employeeId = computed(() => String(route.params.id ?? ''))
 
+const { data: response, status, refresh } = await useFetchData<ApiResponse<Employee>>(
+  `/employees/${employeeId.value}`
+)
+const employee = computed(() => response.value?.data ?? null)
+
 const form = reactive({
-  name: ''
+  name: employee.value?.name ?? ''
 })
 
-const { data: response, status } = await useFetchData(`/employees/${employeeId.value}`)
-console.log('Employee data:', response)
-const employee = computed(() => response?.value?.data ?? null)
+const formMode = ref<'show' | 'edit'>('show')
 
-watch(
-  () => employee.value,
-  (value) => {
-    if (value) {
-      Object.assign(form, value)
+function resetForm() {
+  if (employee.value) {
+    form.name = employee.value.name
+  }
+}
+
+watch(employee, (val) => {
+  if (val) resetForm()
+}, { immediate: true })
+
+async function onUpdateSubmit() {
+  if (!employeeId.value) return
+
+  await useFetchForm(`/employees/${employeeId.value}`, {
+    method: 'PATCH',
+    body: {
+      name: form.name
     }
-  },
-  { immediate: true }
-)
+  })
+
+  toast.add({
+    title: 'Employee updated',
+    description: 'Employee data has been updated successfully.'
+  })
+
+  formMode.value = 'show'
+
+  await refresh()
+}
 
 async function deleteEmployee() {
   if (!employeeId.value) return
@@ -59,12 +84,19 @@ async function deleteEmployee() {
 
       <EmployeesForm
         v-else
+        v-model:mode="formMode"
         :form="form"
         title="Employee Detail"
         subtitle="Employee profile information."
-        mode="show"
+        @update:form="(value: Partial<Employee>) => {
+          if (typeof value.name === 'string') {
+            form.name = value.name
+          }
+        }"
+        @reset="resetForm"
         @cancel="() => navigateTo('/employees')"
         @delete="deleteEmployee"
+        @submit="onUpdateSubmit"
       />
     </template>
   </UDashboardPanel>

@@ -30,9 +30,7 @@ function copyEmployeeId(employee: Employee) {
 }
 
 function viewEmployee(employee: Employee) {
-  navigateTo(`/employees/show/${employee.id}`)
-
-  console.log('View employee:', employee)
+  navigateTo(`/employees/${employee.id}/show`)
 }
 
 async function deleteEmployee(employee: Employee) {
