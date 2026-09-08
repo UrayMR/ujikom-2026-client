@@ -62,7 +62,13 @@ const columns = createEmployeeColumns({
         </template>
 
         <template #right>
-          <EmployeesAddModal />
+          <UButton
+            label="Add Employee"
+            color="primary"
+            variant="solid"
+            icon="i-lucide-plus"
+            @click="navigateTo('/employees/create')"
+          />
         </template>
       </UDashboardNavbar>
     </template>
