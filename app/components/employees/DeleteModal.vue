@@ -2,6 +2,7 @@
 const props = withDefaults(defineProps<{
   count?: number
   selectedIds?: number[]
+  singleId?: number
 }>(), {
   count: 0,
   selectedIds: () => []
@@ -15,8 +16,15 @@ const toast = useToast()
 const open = ref(false)
 const loading = ref(false)
 
+defineExpose({
+  openModal: () => { open.value = true }
+})
+
 async function onSubmit() {
-  if (!props.selectedIds.length) {
+  const idsToDelete = props.singleId ? [props.singleId] : props.selectedIds
+  const totalCount = props.singleId ? 1 : props.count
+
+  if (!idsToDelete.length) {
     open.value = false
     return
   }
@@ -24,28 +32,26 @@ async function onSubmit() {
   loading.value = true
 
   try {
-    await useFetchForm('/employees/bulk', {
-      method: 'DELETE',
-      body: {
-        ids: props.selectedIds
-      }
-    })
+    if (props.singleId) {
+      await useFetchForm(`/employees/${props.singleId}`, {
+        method: 'DELETE'
+      })
+    } else {
+      await useFetchForm('/employees/bulk', {
+        method: 'DELETE',
+        body: { ids: idsToDelete }
+      })
+    }
 
     emit('deleted')
 
     toast.add({
-      title: 'Employees deleted',
-      description: `${props.count} employee${props.count > 1 ? 's' : ''} have been deleted.`
+      title: 'Employee deleted',
+      description: `${totalCount} employee record has been deleted.`
     })
 
     open.value = false
   } catch {
-    toast.add({
-      title: 'Error deleting employees',
-      description: 'An error occurred while deleting employees. Please try again.',
-      color: 'error'
-    })
-
     open.value = false
   } finally {
     loading.value = false
@@ -56,8 +62,8 @@ async function onSubmit() {
 <template>
   <UModal
     v-model:open="open"
-    :title="`Delete ${count} employee${count > 1 ? 's' : ''}`"
-    :description="`Are you sure, this action cannot be undone.`"
+    :title="singleId ? 'Delete employee' : `Delete ${count} employees`"
+    description="Are you sure, this action cannot be undone."
   >
     <slot />
 
@@ -75,7 +81,6 @@ async function onSubmit() {
           color="error"
           variant="solid"
           :loading="loading"
-          :disabled="loading || !selectedIds.length"
           @click="onSubmit"
         />
       </div>

@@ -21,6 +21,9 @@ const employees = computed(
 )
 
 const dataTableRef = ref()
+const singleDeleteOpen = ref(false)
+const employeeToDelete = ref<Employee | null>(null)
+const singleDeleteLoading = ref(false)
 
 async function handleDeleted() {
   if (dataTableRef.value) {
@@ -42,23 +45,38 @@ function viewEmployee(employee: Employee) {
   navigateTo(`/employees/${employee.id}/show`)
 }
 
-async function deleteEmployee(employee: Employee) {
-  await useFetchForm(`/employees/${employee.id}`, {
-    method: 'DELETE'
-  })
+function confirmDeleteEmployee(employee: Employee) {
+  employeeToDelete.value = employee
+  singleDeleteOpen.value = true
+}
 
-  toast.add({
-    title: 'Employee deleted',
-    description: `${employee.name} has been deleted.`
-  })
+async function executeSingleDelete() {
+  if (!employeeToDelete.value) return
 
-  await refresh()
+  singleDeleteLoading.value = true
+
+  try {
+    await useFetchForm(`/employees/${employeeToDelete.value.id}`, {
+      method: 'DELETE'
+    })
+
+    toast.add({
+      title: 'Employee deleted',
+      description: `${employeeToDelete.value.name} has been deleted.`
+    })
+
+    singleDeleteOpen.value = false
+    await handleDeleted()
+  } finally {
+    singleDeleteLoading.value = false
+    employeeToDelete.value = null
+  }
 }
 
 const columns = createEmployeeColumns({
   onCopy: copyEmployeeId,
   onView: viewEmployee,
-  onDelete: deleteEmployee
+  onDelete: confirmDeleteEmployee
 })
 </script>
 
@@ -113,6 +131,31 @@ const columns = createEmployeeColumns({
           </EmployeesDeleteModal>
         </template>
       </DataTable>
+
+      <UModal
+        v-model:open="singleDeleteOpen"
+        :title="`Delete employee ${employeeToDelete?.name ?? ''}`"
+        description="Are you sure, this action cannot be undone."
+      >
+        <template #body>
+          <div class="flex justify-end gap-2">
+            <UButton
+              label="Cancel"
+              color="neutral"
+              variant="subtle"
+              :disabled="singleDeleteLoading"
+              @click="singleDeleteOpen = false"
+            />
+            <UButton
+              label="Delete"
+              color="error"
+              variant="solid"
+              :loading="singleDeleteLoading"
+              @click="executeSingleDelete"
+            />
+          </div>
+        </template>
+      </UModal>
     </template>
   </UDashboardPanel>
 </template>

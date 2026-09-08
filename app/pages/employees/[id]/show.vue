@@ -25,6 +25,9 @@ const form = reactive<EmployeeSchema>({
 
 const formMode = ref<'show' | 'edit'>('show')
 
+const deleteModalOpen = ref(false)
+const deleteLoading = ref(false)
+
 function resetForm() {
   if (employee.value) {
     form.name = employee.value.name
@@ -61,19 +64,30 @@ async function onUpdateSubmit(event: FormSubmitEvent<EmployeeSchema>) {
   await refresh()
 }
 
-async function deleteEmployee() {
+function confirmDelete() {
+  deleteModalOpen.value = true
+}
+
+async function executeDelete() {
   if (!employeeId.value) return
 
-  await useFetchForm(`/employees/${employeeId.value}`, {
-    method: 'DELETE'
-  })
+  deleteLoading.value = true
 
-  toast.add({
-    title: 'Employee deleted',
-    description: 'Employee has been removed successfully.'
-  })
+  try {
+    await useFetchForm(`/employees/${employeeId.value}`, {
+      method: 'DELETE'
+    })
 
-  await navigateTo('/employees')
+    toast.add({
+      title: 'Employee deleted',
+      description: `${employee.value?.name ?? ''} has been removed successfully.`
+    })
+
+    deleteModalOpen.value = false
+    await navigateTo('/employees')
+  } finally {
+    deleteLoading.value = false
+  }
 }
 </script>
 
@@ -113,9 +127,34 @@ async function deleteEmployee() {
         }"
         @reset="resetForm"
         @cancel="() => navigateTo('/employees')"
-        @delete="deleteEmployee"
+        @delete="confirmDelete"
         @submit="onUpdateSubmit"
       />
+
+      <UModal
+        v-model:open="deleteModalOpen"
+        :title="`Delete employee ${employee?.name ?? ''}`"
+        description="Are you sure, this action cannot be undone."
+      >
+        <template #body>
+          <div class="flex justify-end gap-2">
+            <UButton
+              label="Cancel"
+              color="neutral"
+              variant="subtle"
+              :disabled="deleteLoading"
+              @click="deleteModalOpen = false"
+            />
+            <UButton
+              label="Delete"
+              color="error"
+              variant="solid"
+              :loading="deleteLoading"
+              @click="executeDelete"
+            />
+          </div>
+        </template>
+      </UModal>
     </template>
   </UDashboardPanel>
 </template>
