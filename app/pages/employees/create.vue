@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import type { Employee } from '~/types'
+import type { FormSubmitEvent } from '@nuxt/ui'
+import type { EmployeeSchema } from '~/schemas/employee/employee.schema'
 
 const toast = useToast()
 
-const form = reactive<Partial<Employee>>({
+const form = reactive<EmployeeSchema>({
   name: '',
   email: '',
   phoneNumber: '',
@@ -15,13 +17,13 @@ const form = reactive<Partial<Employee>>({
 
 const submitting = ref(false)
 
-async function onSubmit() {
+async function onSubmit(event: FormSubmitEvent<EmployeeSchema>) {
   submitting.value = true
 
   try {
     await useFetchForm('/employees', {
       method: 'POST',
-      body: form
+      body: event.data
     })
 
     toast.add({

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { Employee } from '~/types'
+import { employeeSchema, type EmployeeSchema } from '~/schemas/employee/employee.schema'
+import type { FormSubmitEvent } from '@nuxt/ui'
 
 const props = withDefaults(defineProps<{
   form: Partial<Employee>
@@ -15,7 +17,7 @@ const props = withDefaults(defineProps<{
 })
 
 const emit = defineEmits<{
-  'submit': []
+  'submit': [event: FormSubmitEvent<EmployeeSchema>]
   'cancel': []
   'delete': []
   'reset': []
@@ -50,6 +52,10 @@ const onCancel = () => {
   }
 
   emit('cancel')
+}
+
+function onSubmit(event: FormSubmitEvent<EmployeeSchema>) {
+  emit('submit', event)
 }
 
 function updateField<K extends keyof Employee>(field: K, value: Employee[K]) {
@@ -89,7 +95,12 @@ function toggleEditMode() {
 
     <div class="grid gap-6 lg:grid-cols-[1.6fr_0.9fr]">
       <div class="rounded-2xl border border-default bg-default/40 p-5 sm:p-6">
-        <UForm :state="form" class="space-y-5" @submit="emit('submit')">
+        <UForm
+          :schema="employeeSchema"
+          :state="form"
+          class="space-y-5"
+          @submit="onSubmit"
+        >
           <div class="grid gap-5 md:grid-cols-2">
             <UFormField label="Name" name="name" class="md:col-span-2">
               <UInput

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { ApiResponse, Employee } from '~/types'
+import type { FormSubmitEvent } from '@nuxt/ui'
+import type { EmployeeSchema } from '~/schemas/employee/employee.schema'
 
 const route = useRoute()
 const toast = useToast()
@@ -11,14 +13,14 @@ const { data: response, status, refresh } = await useFetchData<ApiResponse<Emplo
 )
 const employee = computed(() => response.value?.data ?? null)
 
-const form = reactive({
-  name: employee.value?.name ?? '',
-  email: employee.value?.email ?? '',
-  phoneNumber: employee.value?.phoneNumber ?? '',
-  address: employee.value?.address ?? '',
-  birthDate: employee.value?.birthDate ?? new Date(),
-  gender: employee.value?.gender ?? 'male',
-  salary: employee.value?.salary ?? 0
+const form = reactive<EmployeeSchema>({
+  name: '',
+  email: '',
+  phoneNumber: '',
+  address: '',
+  birthDate: new Date(),
+  gender: 'male',
+  salary: 0
 })
 
 const formMode = ref<'show' | 'edit'>('show')
@@ -26,6 +28,14 @@ const formMode = ref<'show' | 'edit'>('show')
 function resetForm() {
   if (employee.value) {
     form.name = employee.value.name
+    form.email = employee.value.email
+    form.phoneNumber = employee.value.phoneNumber
+    form.address = employee.value.address
+    form.birthDate = employee.value.birthDate instanceof Date
+      ? employee.value.birthDate
+      : new Date(employee.value.birthDate)
+    form.gender = employee.value.gender
+    form.salary = employee.value.salary
   }
 }
 
@@ -33,14 +43,12 @@ watch(employee, (val) => {
   if (val) resetForm()
 }, { immediate: true })
 
-async function onUpdateSubmit() {
+async function onUpdateSubmit(event: FormSubmitEvent<EmployeeSchema>) {
   if (!employeeId.value) return
 
   await useFetchForm(`/employees/${employeeId.value}`, {
     method: 'PATCH',
-    body: {
-      name: form.name
-    }
+    body: event.data
   })
 
   toast.add({
@@ -95,9 +103,13 @@ async function deleteEmployee() {
         title="Employee Detail"
         subtitle="Employee profile information."
         @update:form="(value: Partial<Employee>) => {
-          if (typeof value.name === 'string') {
-            form.name = value.name
-          }
+          if (typeof value.name === 'string') form.name = value.name
+          if (typeof value.email === 'string') form.email = value.email
+          if (typeof value.phoneNumber === 'string') form.phoneNumber = value.phoneNumber
+          if (typeof value.address === 'string') form.address = value.address
+          if (value.birthDate instanceof Date) form.birthDate = value.birthDate
+          if (value.gender === 'male' || value.gender === 'female') form.gender = value.gender
+          if (typeof value.salary === 'number') form.salary = value.salary
         }"
         @reset="resetForm"
         @cancel="() => navigateTo('/employees')"
