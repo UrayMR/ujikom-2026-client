@@ -76,7 +76,18 @@ const groups = computed(() => [{
       :ui="{ footer: 'lg:border-t lg:border-default' }"
     >
       <template #header="{ collapsed }">
-        <TeamsMenu :collapsed="collapsed" />
+        <UButton
+          :avatar="{
+            src: 'https://github.com/nuxt.png',
+            alt: 'Nuxt'
+          }"
+          :label="collapsed ? undefined : 'UJIKOM 2026'"
+          color="neutral"
+          variant="ghost"
+          block
+          :square="collapsed"
+          class="py-2"
+        />
       </template>
 
       <template #default="{ collapsed }">

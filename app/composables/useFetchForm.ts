@@ -48,7 +48,9 @@ export const useFetchForm = async <T>(
       error as { response?: { status?: number } }
     ).response?.status
 
-    if (status === 403) {
+    if (status === 401) {
+      throw error
+    } else if (status === 403) {
       toast.add({
         title: 'Forbidden',
         description: 'You do not have permission to access this resource.',
