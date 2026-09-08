@@ -13,7 +13,7 @@ async function submit(event: FormSubmitEvent<LoginSchema>) {
 
   try {
     await login(event.data.email, event.data.password)
-    await navigateTo('/')
+    await navigateTo('/dashboard')
   } catch (error) {
     applyFormErrors(form.value!, error)
   } finally { loading.value = false }

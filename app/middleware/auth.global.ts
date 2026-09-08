@@ -10,7 +10,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   if (to.path === '/login' && user.value) {
-    return navigateTo('/')
+    return navigateTo('/dashboard')
   }
 
   if (publicRoutes.includes(to.path)) {
