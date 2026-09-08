@@ -13,8 +13,6 @@ interface ApiResponse<T> {
 }
 
 export function useAuth() {
-  const config = useRuntimeConfig()
-
   const user = useState<AuthUser | null>(
     'auth:user',
     () => null
@@ -28,18 +26,17 @@ export function useAuth() {
     email: string,
     password: string
   ) {
-    const response = await $fetch<ApiResponse<AuthUser>>(
-      '/auth/login',
-      {
-        baseURL: config.public.apiBaseUrl,
-        method: 'POST',
-        credentials: 'include',
-        body: {
-          email,
-          password
+    const response
+      = await useFetchForm<ApiResponse<AuthUser>>(
+        '/auth/login',
+        {
+          method: 'POST',
+          body: {
+            email,
+            password
+          }
         }
-      }
-    )
+      )
 
     user.value = response.data
 
@@ -48,10 +45,9 @@ export function useAuth() {
 
   async function fetchUser() {
     try {
-      const response = await $fetch<ApiResponse<AuthUser>>(
+      const response = await useFetchForm<ApiResponse<AuthUser>>(
         '/auth/me',
         {
-          baseURL: config.public.apiBaseUrl,
           method: 'GET',
           credentials: 'include'
         }
@@ -68,10 +64,9 @@ export function useAuth() {
 
   async function logout() {
     try {
-      await $fetch<ApiResponse<null>>(
+      await useFetchForm<ApiResponse<null>>(
         '/auth/logout',
         {
-          baseURL: config.public.apiBaseUrl,
           method: 'POST',
           credentials: 'include'
         }
