@@ -20,7 +20,7 @@ export const useFetchForm = async <T>(
 ) => {
   const config = useRuntimeConfig()
   const cookieHeader = useServerCookieHeader()
-  const { show } = useAlert()
+  const toast = useToast()
 
   const isMultipart = options.body instanceof FormData
 
@@ -49,11 +49,29 @@ export const useFetchForm = async <T>(
     ).response?.status
 
     if (status === 403) {
-      show('You do not have permission to access this resource.', 'error')
+      toast.add({
+        title: 'Forbidden',
+        description: 'You do not have permission to access this resource.',
+        color: 'error'
+      })
     } else if (status === 404) {
-      show('Requested resource not found.', 'error')
-    } else if (status === 500) {
-      show('Server error. Please try again later.', 'error')
+      toast.add({
+        title: 'Not Found',
+        description: 'Requested resource not found.',
+        color: 'error'
+      })
+    } else if (status && status >= 500) {
+      toast.add({
+        title: 'Server Error',
+        description: 'An unexpected error occured. Please try again later.',
+        color: 'error'
+      })
+    } else {
+      toast.add({
+        title: 'Request failed',
+        description: 'An unexpected error occurred. Please try again.',
+        color: 'error'
+      })
     }
 
     throw error
