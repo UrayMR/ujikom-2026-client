@@ -12,7 +12,13 @@ const { data: response, status, refresh } = await useFetchData<ApiResponse<Emplo
 const employee = computed(() => response.value?.data ?? null)
 
 const form = reactive({
-  name: employee.value?.name ?? ''
+  name: employee.value?.name ?? '',
+  email: employee.value?.email ?? '',
+  phoneNumber: employee.value?.phoneNumber ?? '',
+  address: employee.value?.address ?? '',
+  birthDate: employee.value?.birthDate ?? new Date(),
+  gender: employee.value?.gender ?? 'male',
+  salary: employee.value?.salary ?? 0
 })
 
 const formMode = ref<'show' | 'edit'>('show')

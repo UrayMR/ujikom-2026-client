@@ -3,8 +3,14 @@ import type { Employee } from '~/types'
 
 const toast = useToast()
 
-const form = reactive({
-  name: ''
+const form = reactive<Partial<Employee>>({
+  name: '',
+  email: '',
+  phoneNumber: '',
+  address: '',
+  birthDate: new Date(),
+  gender: 'male',
+  salary: 0
 })
 
 const submitting = ref(false)

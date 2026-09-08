@@ -25,6 +25,12 @@ const emit = defineEmits<{
 
 const isReadOnly = computed(() => props.mode === 'show')
 
+const genderOptions = [
+  { label: 'Male', value: 'male' },
+  { label: 'Female', value: 'female' },
+  { label: 'Other', value: 'other' }
+]
+
 const submitLabel = computed(() => {
   switch (props.mode) {
     case 'create':
@@ -46,7 +52,7 @@ const onCancel = () => {
   emit('cancel')
 }
 
-function updateField(field: keyof Employee, value: string) {
+function updateField<K extends keyof Employee>(field: K, value: Employee[K]) {
   emit('update:form', {
     ...props.form,
     [field]: value
@@ -84,14 +90,76 @@ function toggleEditMode() {
     <div class="grid gap-6 lg:grid-cols-[1.6fr_0.9fr]">
       <div class="rounded-2xl border border-default bg-default/40 p-5 sm:p-6">
         <UForm :state="form" class="space-y-5" @submit="emit('submit')">
-          <div class="grid gap-5 md:grid-cols-1">
-            <UFormField label="Name" name="name">
+          <div class="grid gap-5 md:grid-cols-2">
+            <UFormField label="Name" name="name" class="md:col-span-2">
               <UInput
                 :model-value="form.name ?? ''"
                 :disabled="isReadOnly"
                 placeholder="John Doe"
                 class="w-full"
                 @update:model-value="(value: string) => updateField('name', value)"
+              />
+            </UFormField>
+
+            <UFormField label="Email" name="email">
+              <UInput
+                :model-value="form.email ?? ''"
+                :disabled="isReadOnly"
+                type="email"
+                placeholder="john.doe@example.com"
+                class="w-full"
+                @update:model-value="(value: string) => updateField('email', value)"
+              />
+            </UFormField>
+
+            <UFormField label="Phone Number" name="phoneNumber">
+              <UInput
+                :model-value="form.phoneNumber ?? ''"
+                :disabled="isReadOnly"
+                placeholder="+1 (555) 000-0000"
+                class="w-full"
+                @update:model-value="(value: string) => updateField('phoneNumber', value)"
+              />
+            </UFormField>
+
+            <UFormField label="Gender" name="gender">
+              <USelect
+                :model-value="form.gender ?? 'male'"
+                :disabled="isReadOnly"
+                :items="genderOptions"
+                class="w-full"
+                @update:model-value="(value: any) => updateField('gender', value)"
+              />
+            </UFormField>
+
+            <UFormField label="Birth Date" name="birthDate">
+              <UInput
+                :model-value="form.birthDate ? new Date(form.birthDate).toISOString().split('T')[0] : ''"
+                :disabled="isReadOnly"
+                type="date"
+                class="w-full"
+                @update:model-value="(value: string) => updateField('birthDate', value ? new Date(value) : new Date())"
+              />
+            </UFormField>
+
+            <UFormField label="Salary" name="salary" class="md:col-span-2">
+              <UInput
+                :model-value="form.salary?.toString() ?? '0'"
+                :disabled="isReadOnly"
+                type="number"
+                placeholder="0"
+                class="w-full"
+                @update:model-value="(value: string) => updateField('salary', Number(value))"
+              />
+            </UFormField>
+
+            <UFormField label="Address" name="address" class="md:col-span-2">
+              <UTextarea
+                :model-value="form.address ?? ''"
+                :disabled="isReadOnly"
+                placeholder="Enter full address..."
+                class="w-full"
+                @update:model-value="(value: string) => updateField('address', value)"
               />
             </UFormField>
           </div>
@@ -124,18 +192,66 @@ function toggleEditMode() {
         </UForm>
       </div>
 
-      <div class="rounded-2xl border border-default bg-elevated/30 p-5 sm:p-6">
+      <div class="rounded-2xl border border-default bg-elevated/30 p-5 sm:p-6 space-y-4">
         <p class="text-xs font-medium uppercase tracking-[0.2em] text-muted">
           Quick summary
         </p>
 
-        <div class="mt-4 space-y-4">
+        <div class="space-y-4">
           <div>
             <p class="text-xs uppercase text-muted">
               Name
             </p>
             <p class="mt-1 text-base font-medium text-highlighted">
-              {{ form.name || 'Not provided' }}
+              {{ form.name || '-' }}
+            </p>
+          </div>
+          <div>
+            <p class="text-xs uppercase text-muted">
+              Email
+            </p>
+            <p class="mt-1 text-base font-medium text-highlighted">
+              {{ form.email || '-' }}
+            </p>
+          </div>
+          <div>
+            <p class="text-xs uppercase text-muted">
+              Phone Number
+            </p>
+            <p class="mt-1 text-base font-medium text-highlighted">
+              {{ form.phoneNumber || '-' }}
+            </p>
+          </div>
+          <div>
+            <p class="text-xs uppercase text-muted">
+              Gender
+            </p>
+            <p class="mt-1 text-base font-medium text-highlighted capitalize">
+              {{ form.gender || '-' }}
+            </p>
+          </div>
+          <div>
+            <p class="text-xs uppercase text-muted">
+              Birth Date
+            </p>
+            <p class="mt-1 text-base font-medium text-highlighted">
+              {{ form.birthDate ? new Date(form.birthDate).toLocaleDateString() : '-' }}
+            </p>
+          </div>
+          <div>
+            <p class="text-xs uppercase text-muted">
+              Salary
+            </p>
+            <p class="mt-1 text-base font-medium text-highlighted">
+              {{ form.salary !== undefined ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(form.salary) : '-' }}
+            </p>
+          </div>
+          <div>
+            <p class="text-xs uppercase text-muted">
+              Address
+            </p>
+            <p class="mt-1 text-base font-medium text-highlighted whitespace-pre-line">
+              {{ form.address || '-' }}
             </p>
           </div>
         </div>

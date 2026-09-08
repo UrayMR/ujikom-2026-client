@@ -69,6 +69,12 @@ export interface Range {
 export interface Employee {
   id: number
   name: string
+  email: string
+  phoneNumber: string
+  address: string
+  birthDate: Date
+  gender: 'male' | 'female'
+  salary: number
   createdAt: string
   updatedAt: string
 }
