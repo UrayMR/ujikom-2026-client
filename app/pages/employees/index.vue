@@ -20,6 +20,15 @@ const employees = computed(
   () => response.value?.data ?? []
 )
 
+const dataTableRef = ref()
+
+async function handleDeleted() {
+  if (dataTableRef.value) {
+    dataTableRef.value.rowSelection = {}
+  }
+  await refresh()
+}
+
 function copyEmployeeId(employee: Employee) {
   navigator.clipboard.writeText(employee.id.toString())
 
@@ -42,6 +51,8 @@ async function deleteEmployee(employee: Employee) {
     title: 'Employee deleted',
     description: `${employee.name} has been deleted.`
   })
+
+  await refresh()
 }
 
 const columns = createEmployeeColumns({
@@ -73,6 +84,7 @@ const columns = createEmployeeColumns({
 
     <template #body>
       <DataTable
+        ref="dataTableRef"
         :data="employees"
         :columns="columns"
         :loading="status === 'pending'"
@@ -83,7 +95,7 @@ const columns = createEmployeeColumns({
           <EmployeesDeleteModal
             :count="selectedRows.length"
             :selected-ids="selectedRows.map((row: any) => row.original.id)"
-            @deleted="refresh()"
+            @deleted="handleDeleted"
           >
             <UButton
               v-if="selectedRows.length"

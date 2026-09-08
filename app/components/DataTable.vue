@@ -40,6 +40,10 @@ const columnFilters = ref([
 const columnVisibility = ref()
 const rowSelection = ref({})
 
+defineExpose({
+  rowSelection
+})
+
 const pagination = ref({
   pageIndex: 0,
   pageSize: props.pageSize

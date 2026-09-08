@@ -11,6 +11,7 @@ const emit = defineEmits<{
   deleted: []
 }>()
 
+const toast = useToast()
 const open = ref(false)
 const loading = ref(false)
 
@@ -23,7 +24,7 @@ async function onSubmit() {
   loading.value = true
 
   try {
-    await useFetchForm('/employees', {
+    await useFetchForm('/employees/bulk', {
       method: 'DELETE',
       body: {
         ids: props.selectedIds
@@ -31,6 +32,20 @@ async function onSubmit() {
     })
 
     emit('deleted')
+
+    toast.add({
+      title: 'Employees deleted',
+      description: `${props.count} employee${props.count > 1 ? 's' : ''} have been deleted.`
+    })
+
+    open.value = false
+  } catch {
+    toast.add({
+      title: 'Error deleting employees',
+      description: 'An error occurred while deleting employees. Please try again.',
+      color: 'error'
+    })
+
     open.value = false
   } finally {
     loading.value = false
