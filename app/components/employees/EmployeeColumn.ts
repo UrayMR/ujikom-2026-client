@@ -43,11 +43,6 @@ export function createEmployeeColumns(
     },
 
     {
-      accessorKey: 'id',
-      header: 'ID'
-    },
-
-    {
       accessorKey: 'name',
 
       header: ({ column }) => {
@@ -74,25 +69,46 @@ export function createEmployeeColumns(
         })
       }
     },
-
     {
-      accessorKey: 'createdAt',
-      header: 'Created At',
-
-      cell: ({ row }) =>
-        new Date(
-          row.original.createdAt
-        ).toLocaleString()
+      accessorKey: 'email',
+      header: 'Email'
     },
-
     {
-      accessorKey: 'updatedAt',
-      header: 'Updated At',
+      accessorKey: 'gender',
+      header: ({ column }) => {
+        const isSorted = column.getIsSorted()
 
-      cell: ({ row }) =>
-        new Date(
-          row.original.updatedAt
-        ).toLocaleString()
+        return h(UButton, {
+          color: 'neutral',
+          variant: 'ghost',
+          label: 'Gender',
+
+          icon: isSorted
+            ? isSorted === 'asc'
+              ? 'i-lucide-arrow-up-narrow-wide'
+              : 'i-lucide-arrow-down-wide-narrow'
+            : 'i-lucide-arrow-up-down',
+
+          class: '-mx-2.5',
+
+          onClick: () => {
+            column.toggleSorting(
+              column.getIsSorted() === 'asc'
+            )
+          }
+        })
+      },
+      cell: ({ row }) => {
+        return row.original.gender.at(0)?.toUpperCase() + row.original.gender.slice(1)
+      }
+
+    },
+    {
+      accessorKey: 'salary',
+      header: 'Salary',
+      cell: ({ row }) => {
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(row.original.salary)
+      }
     },
 
     {
