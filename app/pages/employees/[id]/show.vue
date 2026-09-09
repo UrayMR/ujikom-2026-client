@@ -19,7 +19,7 @@ const form = reactive<EmployeeSchema>({
   phoneNumber: '',
   address: '',
   education: 'SMA/SMK',
-  birthDate: new Date(),
+  birthDate: '',
   gender: 'male',
   salary: 0
 })
@@ -35,9 +35,7 @@ function resetForm() {
     form.email = employee.value.email
     form.phoneNumber = employee.value.phoneNumber
     form.address = employee.value.address
-    form.birthDate = employee.value.birthDate instanceof Date
-      ? employee.value.birthDate
-      : new Date(employee.value.birthDate)
+    form.birthDate = employee.value.birthDate
     form.gender = employee.value.gender
     form.salary = employee.value.salary
   }
@@ -117,15 +115,7 @@ async function executeDelete() {
         :form="form"
         title="Employee Detail"
         subtitle="Employee profile information."
-        @update:form="(value: Partial<Employee>) => {
-          if (typeof value.name === 'string') form.name = value.name
-          if (typeof value.email === 'string') form.email = value.email
-          if (typeof value.phoneNumber === 'string') form.phoneNumber = value.phoneNumber
-          if (typeof value.address === 'string') form.address = value.address
-          if (value.birthDate instanceof Date) form.birthDate = value.birthDate
-          if (value.gender === 'male' || value.gender === 'female') form.gender = value.gender
-          if (typeof value.salary === 'number') form.salary = value.salary
-        }"
+        @update:form="(value: Partial<EmployeeSchema>) => Object.assign(form, value)"
         @reset="resetForm"
         @cancel="() => navigateTo('/employees')"
         @delete="confirmDelete"

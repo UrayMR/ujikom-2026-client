@@ -31,8 +31,8 @@ export const employeeSchema = z.object({
     message: 'Please select an education level'
   }),
 
-  birthDate: z.date({
-    message: 'Please select a date'
+  birthDate: z.iso.date({
+    message: 'Please select a valid date'
   }),
 
   gender: z.enum(['male', 'female'], {

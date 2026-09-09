@@ -2,6 +2,7 @@
 import type { Employee } from '~/types'
 import { employeeSchema, type EmployeeSchema } from '~/schemas/employee/employee.schema'
 import type { FormSubmitEvent } from '@nuxt/ui'
+import { formatBirthDate } from '~/helpers/formatBirthDate'
 
 const props = withDefaults(defineProps<{
   form: Partial<Employee>
@@ -160,7 +161,7 @@ function toggleEditMode() {
                 :disabled="isReadOnly"
                 type="date"
                 class="w-full"
-                @update:model-value="(value: string) => updateField('birthDate', value ? new Date(value) : new Date())"
+                @update:model-value="(value: string) => updateField('birthDate', value)"
               />
             </UFormField>
 
@@ -275,7 +276,7 @@ function toggleEditMode() {
               Birth Date
             </p>
             <p class="mt-1 text-base font-medium text-highlighted">
-              {{ form.birthDate ? new Date(form.birthDate).toLocaleDateString() : '-' }}
+              {{ form.birthDate ? formatBirthDate(form.birthDate) : '-' }}
             </p>
           </div>
           <div>

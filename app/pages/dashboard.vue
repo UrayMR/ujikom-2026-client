@@ -1,74 +1,71 @@
 <script setup lang="ts">
-import { sub } from 'date-fns'
-import type { DropdownMenuItem } from '@nuxt/ui'
-import type { Period, Range } from '~/types'
+import type { ApiResponse, Employee } from '~/types'
 
-const { user } = useAuth()
+const {
+  data: response,
+  status,
+  refresh
+} = await useFetchData<ApiResponse<Employee[]>>('/employees')
 
-const { isNotificationsSlideoverOpen } = useDashboard()
+const employees = computed(
+  () => response.value?.data ?? []
+)
 
-const items = [[{
-  label: 'New mail',
-  icon: 'i-lucide-send',
-  to: '/inbox'
-}, {
-  label: 'New customer',
-  icon: 'i-lucide-user-plus',
-  to: '/customers'
-}]] satisfies DropdownMenuItem[][]
+const loading = computed(
+  () => status.value === 'pending'
+)
 
-const range = shallowRef<Range>({
-  start: sub(new Date(), { days: 14 }),
-  end: new Date()
-})
-const period = ref<Period>('daily')
+async function handleRefresh() {
+  await refresh()
+}
 </script>
 
 <template>
-  <UDashboardPanel id="home">
+  <UDashboardPanel id="dashboard">
     <template #header>
-      <UDashboardNavbar title="Home" :ui="{ right: 'gap-3' }">
+      <UDashboardNavbar title="Dashboard">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
 
         <template #right>
-          <UTooltip text="Notifications" :shortcuts="['N']">
-            <UButton
-              color="neutral"
-              variant="ghost"
-              square
-              @click="isNotificationsSlideoverOpen = true"
-            >
-              <UChip color="error" inset>
-                <UIcon name="i-lucide-bell" class="size-5 shrink-0" />
-              </UChip>
-            </UButton>
-          </UTooltip>
-
-          <UDropdownMenu :items="items">
-            <UButton icon="i-lucide-plus" size="md" class="rounded-full" />
-          </UDropdownMenu>
+          <UButton
+            icon="i-lucide-refresh-cw"
+            color="neutral"
+            variant="ghost"
+            :label="loading ? 'Loading...' : 'Refresh'"
+            :loading="loading"
+            aria-label="Refresh dashboard"
+            @click="handleRefresh"
+          />
         </template>
       </UDashboardNavbar>
-
-      <UDashboardToolbar>
-        <template #left>
-          <!-- NOTE: The `-ms-1` class is used to align with the `DashboardSidebarCollapse` button here. -->
-          <HomeDateRangePicker v-model="range" class="-ms-1" />
-
-          <HomePeriodSelect v-model="period" :range="range" />
-        </template>
-      </UDashboardToolbar>
     </template>
 
     <template #body>
-      <div>
-        Welcome, {{ user?.name }}
+      <div class="space-y-6">
+        <HomeStats
+          :employees="employees"
+          :loading="loading"
+        />
+
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <HomeEducation
+            :employees="employees"
+            :loading="loading"
+          />
+
+          <HomeSalary
+            :employees="employees"
+            :loading="loading"
+          />
+        </div>
+
+        <HomeAge
+          :employees="employees"
+          :loading="loading"
+        />
       </div>
-      <HomeStats :period="period" :range="range" />
-      <HomeChart :period="period" :range="range" />
-      <HomeSales :period="period" :range="range" />
     </template>
   </UDashboardPanel>
 </template>

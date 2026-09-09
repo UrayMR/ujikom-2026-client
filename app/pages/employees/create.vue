@@ -11,7 +11,7 @@ const form = reactive<EmployeeSchema>({
   phoneNumber: '',
   address: '',
   education: 'SMA/SMK',
-  birthDate: new Date(),
+  birthDate: '',
   gender: 'male',
   salary: 0
 })

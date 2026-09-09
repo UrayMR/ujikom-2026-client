@@ -80,7 +80,7 @@ export interface Employee {
     | 'S1/D4'
     | 'S2'
     | 'S3'
-  birthDate: Date
+  birthDate: string
   gender: 'male' | 'female'
   salary: number
   createdAt: string

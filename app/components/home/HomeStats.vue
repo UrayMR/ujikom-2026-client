@@ -1,98 +1,196 @@
 <script setup lang="ts">
-import type { Period, Range, Stat } from '~/types'
+import { getAge } from '~/helpers/getAge'
+import type { Employee } from '~/types'
 
 const props = defineProps<{
-  period: Period
-  range: Range
+  employees: Employee[]
+  loading: boolean
 }>()
 
-function formatCurrency(value: number): string {
-  return value.toLocaleString('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0
-  })
-}
+const totalEmployees = computed(() =>
+  props.employees.length
+)
 
-const baseStats = [{
-  title: 'Customers',
-  icon: 'i-lucide-users',
-  minValue: 400,
-  maxValue: 1000,
-  minVariation: -15,
-  maxVariation: 25
-}, {
-  title: 'Conversions',
-  icon: 'i-lucide-chart-pie',
-  minValue: 1000,
-  maxValue: 2000,
-  minVariation: -10,
-  maxVariation: 20
-}, {
-  title: 'Revenue',
-  icon: 'i-lucide-circle-dollar-sign',
-  minValue: 200000,
-  maxValue: 500000,
-  minVariation: -20,
-  maxVariation: 30,
-  formatter: formatCurrency
-}, {
-  title: 'Orders',
-  icon: 'i-lucide-shopping-cart',
-  minValue: 100,
-  maxValue: 300,
-  minVariation: -5,
-  maxVariation: 15
-}]
+const ages = computed(() =>
+  props.employees
+    .map(employee => getAge(employee.birthDate))
+    .filter(
+      (age): age is number =>
+        age !== null && age >= 0
+    )
+)
 
-const { data: stats } = await useAsyncData<Stat[]>('stats', async () => {
-  return baseStats.map((stat) => {
-    const value = randomInt(stat.minValue, stat.maxValue)
-    const variation = randomInt(stat.minVariation, stat.maxVariation)
+const averageAge = computed(() => {
+  if (!ages.value.length) {
+    return null
+  }
 
-    return {
-      title: stat.title,
-      icon: stat.icon,
-      value: stat.formatter ? stat.formatter(value) : value,
-      variation
-    }
-  })
-}, {
-  watch: [() => props.period, () => props.range],
-  default: () => []
+  const total = ages.value.reduce(
+    (sum, age) => sum + age,
+    0
+  )
+
+  return Math.round(
+    total / ages.value.length
+  )
 })
+
+const maleCount = computed(() =>
+  props.employees.filter(
+    employee => employee.gender === 'male'
+  ).length
+)
+
+const femaleCount = computed(() =>
+  props.employees.filter(
+    employee => employee.gender === 'female'
+  ).length
+)
+
+const malePercentage = computed(() =>
+  totalEmployees.value
+    ? Math.round(
+        (maleCount.value / totalEmployees.value) * 100
+      )
+    : 0
+)
+
+const femalePercentage = computed(() =>
+  totalEmployees.value
+    ? Math.round(
+        (femaleCount.value / totalEmployees.value) * 100
+      )
+    : 0
+)
 </script>
 
 <template>
-  <UPageGrid class="lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-px">
-    <UPageCard
-      v-for="(stat, index) in stats"
-      :key="index"
-      :icon="stat.icon"
-      :title="stat.title"
-      to="/customers"
-      variant="subtle"
-      :ui="{
-        container: 'gap-y-1.5',
-        wrapper: 'items-start',
-        leading: 'p-2.5 rounded-full bg-primary/10 ring ring-inset ring-primary/25 flex-col',
-        title: 'font-normal text-muted text-xs uppercase'
-      }"
-      class="lg:rounded-none first:rounded-l-lg last:rounded-r-lg hover:z-1"
-    >
-      <div class="flex items-center gap-2">
-        <span class="text-2xl font-semibold text-highlighted">
-          {{ stat.value }}
-        </span>
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <!-- Total employees -->
+    <UCard>
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="text-sm text-muted">
+            Total Pegawai
+          </p>
 
-        <UBadge
-          :color="stat.variation > 0 ? 'success' : 'error'"
-          variant="subtle"
-          class="text-xs"
-        >
-          {{ stat.variation > 0 ? '+' : '' }}{{ stat.variation }}%
-        </UBadge>
+          <USkeleton
+            v-if="loading"
+            class="mt-2 h-9 w-20"
+          />
+
+          <p
+            v-else
+            class="mt-2 text-3xl font-semibold tracking-tight text-highlighted"
+          >
+            {{ totalEmployees }}
+          </p>
+        </div>
+
+        <div class="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          <UIcon
+            name="i-lucide-users"
+            class="size-5"
+          />
+        </div>
       </div>
-    </UPageCard>
-  </UPageGrid>
+    </UCard>
+
+    <!-- Average age -->
+    <UCard>
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="text-sm text-muted">
+            Rata-rata Usia
+          </p>
+
+          <USkeleton
+            v-if="loading"
+            class="mt-2 h-9 w-24"
+          />
+
+          <div
+            v-else
+            class="mt-2 flex items-baseline gap-1"
+          >
+            <span class="text-3xl font-semibold tracking-tight text-highlighted">
+              {{ averageAge }}
+            </span>
+
+            <span class="text-sm text-muted">
+              tahun
+            </span>
+          </div>
+        </div>
+
+        <div class="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          <UIcon
+            name="i-lucide-calendar-days"
+            class="size-5"
+          />
+        </div>
+      </div>
+    </UCard>
+
+    <!-- Gender -->
+
+    <UCard>
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="text-sm text-muted">
+            Komposisi Gender
+          </p>
+
+          <USkeleton
+            v-if="loading"
+            class="mt-3 h-8 w-28"
+          />
+
+          <div
+            v-else
+            class="mt-2 flex items-baseline gap-5"
+          >
+            <div>
+              <div class="flex items-baseline gap-1">
+                <span class="text-2xl font-semibold text-highlighted">
+                  {{ maleCount }}
+                </span>
+
+                <span class="text-sm text-muted">
+                  ({{ malePercentage }}%)
+                </span>
+              </div>
+
+              <p class="text-xs text-muted">
+                Laki-laki
+              </p>
+            </div>
+
+            <div>
+              <div class="flex items-baseline gap-1">
+                <span class="text-2xl font-semibold text-highlighted">
+                  {{ femaleCount }}
+                </span>
+
+                <span class="text-sm text-muted">
+                  ({{ femalePercentage }}%)
+                </span>
+              </div>
+
+              <p class="text-xs text-muted">
+                Perempuan
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          <UIcon
+            name="i-lucide-venus-and-mars"
+            class="size-5"
+          />
+        </div>
+      </div>
+    </UCard>
+  </div>
 </template>
